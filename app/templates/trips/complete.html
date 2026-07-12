@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Trip - {{ trip.trip_code }} - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('trips.index') }}">Trips</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('trips.details', id=trip.id) }}">{{ trip.trip_code }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Complete Trip</li>
+{% endblock %}
+
+{% block page_title %}Complete Trip: {{ trip.trip_code }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-flag-fill me-2 text-success"></i>Odometer & Closing Logistics
+            </div>
+            <div class="card-body p-4">
+                <!-- Info alert detailing previous odometer reading -->
+                <div class="alert alert-info border-0 mb-4 fs-7" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    Vehicle <strong>{{ trip.vehicle.registration_number }}</strong> started this trip with odometer reading <strong>{{ trip.vehicle.current_odometer }} km</strong>. Final odometer must be equal or greater.
+                </div>
+
+                <form method="POST" action="{{ url_for('trips.complete', id=trip.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="final_odometer" class="form-label fw-semibold">Final Odometer Reading (km)</label>
+                            {{ form.final_odometer(class="form-control" + (" is-invalid" if form.final_odometer.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.final_odometer.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_consumed" class="form-label fw-semibold">Fuel Consumed (Litres)</label>
+                            {{ form.fuel_consumed(class="form-control" + (" is-invalid" if form.fuel_consumed.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.fuel_consumed.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="text-muted fs-8">Total fuel consumed during this specific route.</small>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Auto-Calculate Fuel Costs & Expense Generation</h6>
+                    <p class="text-muted fs-8 mb-4">Provide the purchase rate and station details to automatically log a Fuel fill log and register a corresponding trip expense in the financials ledger.</p>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="fuel_price" class="form-label fw-semibold">Fuel Price (₹ / Litre)</label>
+                            <input type="number" id="fuel_price" name="fuel_price" class="form-control" step="0.01" placeholder="e.g. 90.00">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="fuel_station" class="form-label fw-semibold">Fuel Station Brand</label>
+                            <input type="text" id="fuel_station" name="fuel_station" class="form-control" placeholder="e.g. IndianOil Station">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold text-muted d-block">Estimated Cost</label>
+                            <div class="form-control-plaintext fw-bold text-danger fs-5 pt-1.5" id="total_cost_display">₹0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="trip_notes" class="form-label fw-semibold">Closing Trip Notes</label>
+                        {{ form.trip_notes(class="form-control" + (" is-invalid" if form.trip_notes.errors else ""), rows="3", placeholder="Add cargo delivery confirmation, notes about vehicle performance, or incidents...") }}
+                        {% for error in form.trip_notes.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('trips.details', id=trip.id) }}" class="btn btn-light border px-4">Back</a>
+                        {{ form.submit(class="btn btn-success px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

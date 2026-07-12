@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('settings.index') }}">Settings</a></li>
+<li class="breadcrumb-item active" aria-current="page">Users</li>
+{% endblock %}
+
+{% block page_title %}User Login Accounts{% endblock %}
+
+{% block action_buttons %}
+<a href="{{ url_for('settings.users_create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-person-plus"></i>Create User Login
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Users Listing Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email Login</th>
+                        <th>Assigned Role</th>
+                        <th>Profile Linkage</th>
+                        <th>Account Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ user.name }}</div>
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-light text-muted border fs-9">Current Session</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ user.email }}</code></td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">{{ user.role }}</span>
+                        </td>
+                        <td>
+                            {% if user.role == 'Driver' %}
+                                {% if user.driver_profile %}
+                                <a href="{{ url_for('drivers.details', id=user.driver_profile.id) }}" class="fs-8 text-decoration-none">Linked to {{ user.driver_profile.name }}</a>
+                                {% else %}
+                                <span class="text-danger fs-8"><i class="bi bi-x-circle me-1"></i>No driver profile linked</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted fs-8">Admin Clearance</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                            <span class="badge bg-success-subtle text-success"><i class="bi bi-check-circle me-1"></i>ACTIVE</span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger"><i class="bi bi-dash-circle me-1"></i>DEACTIVATED</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if user.id == current_user.id %}
+                            <span class="text-muted fs-8">Restricted</span>
+                            {% else %}
+                            <form action="{{ url_for('settings.toggle_user', id=user.id) }}" method="POST" class="d-inline confirm-delete" data-confirm-message="Are you sure you want to {% if user.is_active %}deactivate{% else %}activate{% endif %} user account for {{ user.name }}?">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} px-3">
+                                    {% if user.is_active %}<i class="bi bi-slash-circle me-1"></i>Deactivate{% else %}<i class="bi bi-check-circle me-1"></i>Activate{% endif %}
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

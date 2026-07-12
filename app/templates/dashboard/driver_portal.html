@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Driver Portal - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Driver Portal</li>
+{% endblock %}
+
+{% block page_title %}Driver Portal{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Driver Meta Profile Info -->
+    <div class="col-lg-4">
+        <div class="card border-0 h-100 shadow-sm">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-person-circle me-2 text-primary"></i>My Profile Status
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    {% if driver.photo %}
+                    <img src="{{ url_for('static', filename='uploads/' + driver.photo) }}" alt="Driver Photo" class="img-thumbnail rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                    <i class="bi bi-person-circle text-secondary mb-3" style="font-size: 5rem; display: block;"></i>
+                    {% endif %}
+                    <h5 class="fw-bold mb-1">{{ driver.name }}</h5>
+                    <span class="badge badge-status bg-{{ driver.status }} fs-7 mb-2">{{ driver.status.upper() }}</span>
+                </div>
+                
+                <hr>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="detail-meta-label">License No.</div>
+                        <div class="detail-meta-value fs-8">{{ driver.license_number }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-meta-label">Category</div>
+                        <div class="detail-meta-value fs-8">{{ driver.license_category }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-meta-label">Safety Score</div>
+                        <div class="detail-meta-value {% if driver.safety_score >= 85 %}text-success{% elif driver.safety_score >= 70 %}text-warning{% else %}text-danger{% endif %} fw-bold">
+                            {{ driver.safety_score }} / 100
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="detail-meta-label">License Expiry</div>
+                        <div class="detail-meta-value fs-8 {% if kpis.license_status == 'Expired' %}text-danger{% endif %}">
+                            {{ kpis.license_expiry }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Driver KPI Cards -->
+    <div class="col-lg-8">
+        <div class="row row-cols-1 row-cols-sm-3 g-3 mb-4">
+            <div class="col">
+                <div class="card border-0 text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <span class="text-muted fs-7 text-uppercase fw-semibold">Assigned Trips</span>
+                        <h2 class="fw-bold text-dark mt-2 mb-0">{{ kpis.total_trips }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border-0 text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <span class="text-muted fs-7 text-uppercase fw-semibold">On Road Trips</span>
+                        <h2 class="fw-bold text-primary mt-2 mb-0">{{ kpis.dispatched_trips }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border-0 text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <span class="text-muted fs-7 text-uppercase fw-semibold">Completed Trips</span>
+                        <h2 class="fw-bold text-success mt-2 mb-0">{{ kpis.completed_trips }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Trips List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <span class="fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i>My Assigned Trip Worklist</span>
+                <a href="{{ url_for('trips.index') }}" class="fs-7 text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Trip ID</th>
+                                <th>Route</th>
+                                <th>Vehicle</th>
+                                <th>Weight</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trip in assigned_trips %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('trips.details', id=trip.id) }}" class="fw-semibold text-decoration-none">{{ trip.trip_code }}</a>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ trip.source }}</div>
+                                    <div class="text-muted fs-8">To: {{ trip.destination }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ trip.vehicle.registration_number }}</div>
+                                    <small class="text-muted">{{ trip.vehicle.name }}</small>
+                                </td>
+                                <td>{{ trip.cargo_weight }} kg</td>
+                                <td>
+                                    <span class="badge badge-status bg-{{ trip.status }}">{{ trip.status.upper() }}</span>
+                                </td>
+                                <td class="text-end">
+                                    {% if trip.status == 'draft' %}
+                                    <form action="{{ url_for('trips.dispatch', id=trip.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-primary btn-sm px-3">
+                                            <i class="bi bi-play-fill me-1"></i>Start Trip
+                                        </button>
+                                    </form>
+                                    {% elif trip.status == 'dispatched' %}
+                                    <a href="{{ url_for('trips.complete', id=trip.id) }}" class="btn btn-success btn-sm px-3">
+                                        <i class="bi bi-check-lg me-1"></i>Complete
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted fs-7">No actions pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-info-circle me-1"></i>You are not currently assigned to any active or upcoming trips.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

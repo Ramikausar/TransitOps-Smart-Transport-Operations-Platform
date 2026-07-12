@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Settings</li>
+{% endblock %}
+
+{% block page_title %}Account Settings{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Profile Edit Card -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-person-gear me-2 text-primary"></i>My Profile Security Details
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('settings.index') }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label fw-semibold">Display Name</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                        {% for error in form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold">Email Address</label>
+                        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted fs-8">Used to authenticate your ERP login.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Change Password</label>
+                        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        <small class="text-muted fs-8">Leave empty to keep your current security password.</small>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Administrative Quick Access (Only Fleet Manager) -->
+    {% if current_user.role == 'Fleet Manager' %}
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-shield-lock me-2 text-dark"></i>User Login Administration
+            </div>
+            <div class="card-body">
+                <p class="text-muted fs-7">
+                    As a Fleet Manager, you have permission to manage logins, create new staff accounts (Drivers, Analysts, Safety Officers), and toggle credentials status.
+                </p>
+                <div class="d-flex flex-column gap-2 mt-4">
+                    <a href="{{ url_for('settings.users_list') }}" class="btn btn-outline-secondary d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-people"></i>Manage User Accounts
+                    </a>
+                    <a href="{{ url_for('settings.users_create') }}" class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-1">
+                        <i class="bi bi-person-plus"></i>Create New User Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Vehicle - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('vehicles.index') }}">Vehicles</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('vehicles.details', id=vehicle.id) }}">{{ vehicle.registration_number }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit Specifications</li>
+{% endblock %}
+
+{% block page_title %}Edit Vehicle: {{ vehicle.registration_number }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-truck-flatbed me-2 text-primary"></i>Vehicle Specifications
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('vehicles.edit', id=vehicle.id) }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="registration_number" class="form-label fw-semibold">Registration Number (Unique)</label>
+                            {{ form.registration_number(class="form-control" + (" is-invalid" if form.registration_number.errors else "")) }}
+                            {% for error in form.registration_number.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Vehicle Brand/Name</label>
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="model" class="form-label fw-semibold">Model Name/Year</label>
+                            {{ form.model(class="form-control" + (" is-invalid" if form.model.errors else "")) }}
+                            {% for error in form.model.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="vehicle_type_id" class="form-label fw-semibold">Vehicle Type</label>
+                            {{ form.vehicle_type_id(class="form-select" + (" is-invalid" if form.vehicle_type_id.errors else "")) }}
+                            {% for error in form.vehicle_type_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_type_id" class="form-label fw-semibold">Fuel Type</label>
+                            {{ form.fuel_type_id(class="form-select" + (" is-invalid" if form.fuel_type_id.errors else "")) }}
+                            {% for error in form.fuel_type_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="max_load_capacity" class="form-label fw-semibold">Max Load Capacity (kg)</label>
+                            {{ form.max_load_capacity(class="form-control" + (" is-invalid" if form.max_load_capacity.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.max_load_capacity.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="current_odometer" class="form-label fw-semibold">Current Odometer (km)</label>
+                            {{ form.current_odometer(class="form-control" + (" is-invalid" if form.current_odometer.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.current_odometer.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">Ledger & Registration Details</h6>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label for="purchase_date" class="form-label fw-semibold">Purchase Date</label>
+                            {{ form.purchase_date(class="form-control" + (" is-invalid" if form.purchase_date.errors else ""), type="date") }}
+                            {% for error in form.purchase_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="acquisition_cost" class="form-label fw-semibold">Acquisition Cost (₹)</label>
+                            {{ form.acquisition_cost(class="form-control" + (" is-invalid" if form.acquisition_cost.errors else ""), type="number", step="0.01") }}
+                            {% for error in form.acquisition_cost.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="status" class="form-label fw-semibold">Asset Status</label>
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% for error in form.status.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="insurance_expiry" class="form-label fw-semibold">Insurance Expiry Date</label>
+                            {{ form.insurance_expiry(class="form-control" + (" is-invalid" if form.insurance_expiry.errors else ""), type="date") }}
+                            {% for error in form.insurance_expiry.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="rc_expiry" class="form-label fw-semibold">Registration Certificate (RC) Expiry</label>
+                            {{ form.rc_expiry(class="form-control" + (" is-invalid" if form.rc_expiry.errors else ""), type="date") }}
+                            {% for error in form.rc_expiry.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('vehicles.index') }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

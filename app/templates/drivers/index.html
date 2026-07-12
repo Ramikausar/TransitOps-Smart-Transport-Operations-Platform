@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Drivers List - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Drivers</li>
+{% endblock %}
+
+{% block page_title %}Drivers Management{% endblock %}
+
+{% block action_buttons %}
+{% if current_user.role in ['Fleet Manager', 'Safety Officer'] %}
+<a href="{{ url_for('drivers.create') }}" class="btn btn-success d-flex align-items-center gap-1">
+    <i class="bi bi-person-plus"></i>Add Driver
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="card border-0 mb-4 shadow-sm">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('drivers.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Search driver name, license, email, class..." value="{{ search }}">
+                </div>
+            </div>
+            
+            <div class="col-md-3 col-sm-8 col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- All Statuses --</option>
+                    <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+                    <option value="on_trip" {% if status_filter == 'on_trip' %}selected{% endif %}>On Trip</option>
+                    <option value="off_duty" {% if status_filter == 'off_duty' %}selected{% endif %}>Off Duty</option>
+                    <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+                </select>
+            </div>
+
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="sort_order" value="{{ sort_order }}">
+
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                <a href="{{ url_for('drivers.index') }}" class="btn btn-light border w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Drivers Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        {% macro sortable_th(field, label) %}
+                        <th>
+                            <a href="{{ url_for('drivers.index', search=search, status=status_filter, sort_by=field, sort_order='desc' if sort_by == field and sort_order == 'asc' else 'asc') }}" class="text-dark text-decoration-none d-flex align-items-center gap-1">
+                                {{ label }}
+                                {% if sort_by == field %}
+                                    <i class="bi bi-arrow-{% if sort_order == 'asc' %}up{% else %}down{% endif %} fs-8 text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up fs-8 text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        {% endmacro %}
+                        
+                        <th>Photo</th>
+                        {{ sortable_th('name', 'Name') }}
+                        <th>License Details</th>
+                        {{ sortable_th('safety_score', 'Safety Score') }}
+                        {{ sortable_th('joining_date', 'Joined Date') }}
+                        {{ sortable_th('status', 'Status') }}
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for driver in drivers %}
+                    <tr>
+                        <td>
+                            {% if driver.photo %}
+                            <img src="{{ url_for('static', filename='uploads/' + driver.photo) }}" alt="Driver Photo" class="rounded-circle border border-secondary" style="width: 38px; height: 38px; object-fit: cover;">
+                            {% else %}
+                            <i class="bi bi-person-circle fs-3 text-secondary"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('drivers.details', id=driver.id) }}" class="fw-semibold text-decoration-none d-block">{{ driver.name }}</a>
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">{{ driver.email }}</small>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ driver.license_number }}</div>
+                            <small class="text-muted">Class: {{ driver.license_category }} | Exp: {{ driver.license_expiry.strftime('%Y-%m-%d') }}</small>
+                            {% if driver.is_license_expired %}
+                            <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">EXPIRED</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold {% if driver.safety_score >= 85 %}text-success{% elif driver.safety_score >= 70 %}text-warning{% else %}text-danger{% endif %}">
+                                    {{ driver.safety_score }}
+                                </span>
+                                <div class="progress" style="width: 60px; height: 4px;">
+                                    <div class="progress-bar {% if driver.safety_score >= 85 %}bg-success{% elif driver.safety_score >= 70 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ driver.safety_score }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ driver.joining_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <span class="badge badge-status bg-{{ driver.status }}">{{ driver.status.upper() }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1.5">
+                                <a href="{{ url_for('drivers.details', id=driver.id) }}" class="btn btn-light btn-sm border" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Fleet Manager', 'Safety Officer'] %}
+                                <a href="{{ url_for('drivers.edit', id=driver.id) }}" class="btn btn-light btn-sm border text-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ url_for('drivers.delete', id=driver.id) }}" method="POST" class="d-inline confirm-delete" data-confirm-message="Are you sure you want to delete driver {{ driver.name }}? This will unlink their driver profile.">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-light btn-sm border text-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-person-badge text-secondary fs-2 d-block mb-3"></i>
+                            <h5>No Drivers Found</h5>
+                            <p class="fs-7">Modify search queries or add a new driver profile.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination Footer -->
+{% if pagination and pagination.pages > 1 %}
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted fs-7">
+        Showing Page {{ pagination.page }} of {{ pagination.pages }}
+    </div>
+    <nav>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('drivers.index', page=pagination.prev_num, search=search, status=status_filter, sort_by=sort_by, sort_order=sort_order) }}">Previous</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('drivers.index', page=page_num, search=search, status=status_filter, sort_by=sort_by, sort_order=sort_order) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('drivers.index', page=pagination.next_num, search=search, status=status_filter, sort_by=sort_by, sort_order=sort_order) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

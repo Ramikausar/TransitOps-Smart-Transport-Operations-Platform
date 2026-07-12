@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Trip - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('trips.index') }}">Trips</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('trips.details', id=trip.id) }}">{{ trip.trip_code }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit Request</li>
+{% endblock %}
+
+{% block page_title %}Edit Trip: {{ trip.trip_code }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Trip Logistics Specifications
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('trips.edit', id=trip.id) }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="source" class="form-label fw-semibold">Source Location</label>
+                            {{ form.source(class="form-control" + (" is-invalid" if form.source.errors else "")) }}
+                            {% for error in form.source.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="destination" class="form-label fw-semibold">Destination Location</label>
+                            {{ form.destination(class="form-control" + (" is-invalid" if form.destination.errors else "")) }}
+                            {% for error in form.destination.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label fw-semibold">Vehicle Assignment</label>
+                            {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+                            {% for error in form.vehicle_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="driver_id" class="form-label fw-semibold">Driver Assignment</label>
+                            {{ form.driver_id(class="form-select" + (" is-invalid" if form.driver_id.errors else "")) }}
+                            {% for error in form.driver_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="cargo_weight" class="form-label fw-semibold">Cargo Weight (kg)</label>
+                            {{ form.cargo_weight(class="form-control" + (" is-invalid" if form.cargo_weight.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.cargo_weight.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="distance" class="form-label fw-semibold">Estimated Distance (km)</label>
+                            {{ form.distance(class="form-control" + (" is-invalid" if form.distance.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.distance.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="trip_notes" class="form-label fw-semibold">Trip Instruction Notes</label>
+                            {{ form.trip_notes(class="form-control" + (" is-invalid" if form.trip_notes.errors else ""), rows="3") }}
+                            {% for error in form.trip_notes.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('trips.details', id=trip.id) }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

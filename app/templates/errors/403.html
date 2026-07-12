@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - TransitOps{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center py-5">
+    <div class="col-md-6 text-center">
+        <i class="bi bi-shield-slash-fill text-danger" style="font-size: 5rem;"></i>
+        <h1 class="display-5 font-weight-bold mt-3 text-dark">403 - Forbidden</h1>
+        <p class="text-muted leading-relaxed">
+            You do not have administrative clearance to view this module. Access is restricted according to your current system role permissions.
+        </p>
+        <div class="mt-4">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-house me-2"></i>Return to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

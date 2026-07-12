@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Reports Centre - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Reports</li>
+{% endblock %}
+
+{% block page_title %}Reports Centre{% endblock %}
+
+{% block content %}
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    <!-- Report 1: Fleet Operating Cost -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-cash-coin me-2"></i>Operating Costs & Usage
+                    </h5>
+                    <p class="text-muted fs-7 mb-4">
+                        Aggregates total mileage, fuel spend, repair expenditures, and other operational costs per vehicle to calculate total operating expenditures and average cost per km.
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.view_report', type='fleet_costs') }}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-eye me-1"></i>View & Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 2: Fuel Efficiency -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-fuel-pump-diesel me-2"></i>Fuel Consumption & Efficiency
+                    </h5>
+                    <p class="text-muted fs-7 mb-4">
+                        Analyses fuel consumption records, mileage completed on trips, and computes average fuel efficiency metrics (km/L) per truck in the fleet.
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.view_report', type='fuel_efficiency') }}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-eye me-1"></i>View & Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 3: Driver Performance -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-shield-check me-2"></i>Driver Safety & Performance
+                    </h5>
+                    <p class="text-muted fs-7 mb-4">
+                        Summarises driver safety scores, completed/assigned trips, total distance traveled, and license validation logs to audit driver metrics.
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.view_report', type='driver_performance') }}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-eye me-1"></i>View & Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 4: License Monitoring -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>License Expiries Schedule
+                    </h5>
+                    <p class="text-muted fs-7 mb-4">
+                        Lists all driver commercial licenses sorted by expiry date. Highlights upcoming expiries within 30 days and already expired credentials.
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.view_report', type='licenses') }}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-eye me-1"></i>View & Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report 5: Maintenance Logs -->
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold text-primary mb-2">
+                        <i class="bi bi-wrench-adjustable me-2"></i>Repairs & Service Logs
+                    </h5>
+                    <p class="text-muted fs-7 mb-4">
+                        Aggregates all routine services, accidents, inspections, and repair costs. Highlights ongoing repairs and total service investments.
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('reports.view_report', type='maintenance') }}" class="btn btn-primary btn-sm px-4">
+                        <i class="bi bi-eye me-1"></i>View & Export Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

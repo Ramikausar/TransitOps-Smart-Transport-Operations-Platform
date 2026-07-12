@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Fuel Log - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('fuel.index') }}">Fuel Logs</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit Record</li>
+{% endblock %}
+
+{% block page_title %}Edit Fuel Log{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-fuel-pump me-2 text-danger"></i>Fuel Receipt Details
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('fuel.edit', id=fuel_log.id) }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label fw-semibold">Vehicle</label>
+                            {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+                            {% for error in form.vehicle_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="trip_id" class="form-label fw-semibold">Linked Trip (Optional)</label>
+                            {{ form.trip_id(class="form-select" + (" is-invalid" if form.trip_id.errors else "")) }}
+                            {% for error in form.trip_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_type_id" class="form-label fw-semibold">Fuel Type</label>
+                            {{ form.fuel_type_id(class="form-select" + (" is-invalid" if form.fuel_type_id.errors else "")) }}
+                            {% for error in form.fuel_type_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_quantity" class="form-label fw-semibold">Fuel Quantity (Litres / KG)</label>
+                            {{ form.fuel_quantity(class="form-control" + (" is-invalid" if form.fuel_quantity.errors else ""), type="number", step="0.1", id="fuel_quantity") }}
+                            {% for error in form.fuel_quantity.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_price" class="form-label fw-semibold">Fuel Price (₹ / Unit)</label>
+                            {{ form.fuel_price(class="form-control" + (" is-invalid" if form.fuel_price.errors else ""), type="number", step="0.01", id="fuel_price") }}
+                            {% for error in form.fuel_price.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="fuel_station" class="form-label fw-semibold">Fuel Station Name</label>
+                            {{ form.fuel_station(class="form-control" + (" is-invalid" if form.fuel_station.errors else "")) }}
+                            {% for error in form.fuel_station.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="date" class="form-label fw-semibold">Fill Date</label>
+                            {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else ""), type="date") }}
+                            {% for error in form.date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Total cost display -->
+                    <div class="card bg-light border-0 mb-4">
+                        <div class="card-body d-flex justify-content-between align-items-center py-2.5">
+                            <span class="fw-semibold text-muted fs-7">Calculated Total Cost:</span>
+                            <span class="fw-bold text-danger fs-4" id="total_cost_display">₹{{ "{:,.2f}".format(fuel_log.total_cost) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('fuel.index') }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-danger px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

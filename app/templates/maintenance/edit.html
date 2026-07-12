@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Maintenance - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('maintenance.index') }}">Maintenance</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit Record</li>
+{% endblock %}
+
+{% block page_title %}Edit Maintenance Record{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-wrench me-2 text-warning"></i>Maintenance Ticket Specifications
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('maintenance.edit', id=maintenance.id) }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label fw-semibold">Vehicle to Service</label>
+                            {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+                            {% for error in form.vehicle_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="maintenance_type_id" class="form-label fw-semibold">Maintenance Type</label>
+                            {{ form.maintenance_type_id(class="form-select" + (" is-invalid" if form.maintenance_type_id.errors else "")) }}
+                            {% for error in form.maintenance_type_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label fw-semibold">Start Date</label>
+                            {{ form.start_date(class="form-control" + (" is-invalid" if form.start_date.errors else ""), type="date") }}
+                            {% for error in form.start_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label fw-semibold">End Date</label>
+                            {{ form.end_date(class="form-control" + (" is-invalid" if form.end_date.errors else ""), type="date") }}
+                            {% for error in form.end_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="cost" class="form-label fw-semibold">Maintenance Cost (₹)</label>
+                            {{ form.cost(class="form-control" + (" is-invalid" if form.cost.errors else ""), type="number", step="0.01") }}
+                            {% for error in form.cost.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-semibold">Work Order Status</label>
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% for error in form.status.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="description" class="form-label fw-semibold">Detailed Description of Work</label>
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('maintenance.index') }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-warning px-4 text-dark font-weight-bold") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

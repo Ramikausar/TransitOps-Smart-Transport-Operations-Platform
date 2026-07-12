@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Expense - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('expenses.index') }}">Expenses</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit Record</li>
+{% endblock %}
+
+{% block page_title %}Edit Operating Expense{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-cash-stack me-2 text-secondary"></i>Expense Voucher Details
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('expenses.edit', id=expense.id) }}" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="vehicle_id" class="form-label fw-semibold">Charged Vehicle</label>
+                            {{ form.vehicle_id(class="form-select" + (" is-invalid" if form.vehicle_id.errors else "")) }}
+                            {% for error in form.vehicle_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="trip_id" class="form-label fw-semibold">Linked Trip (Optional)</label>
+                            {{ form.trip_id(class="form-select" + (" is-invalid" if form.trip_id.errors else "")) }}
+                            {% for error in form.trip_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="expense_category_id" class="form-label fw-semibold">Expense Category</label>
+                            {{ form.expense_category_id(class="form-select" + (" is-invalid" if form.expense_category_id.errors else "")) }}
+                            {% for error in form.expense_category_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label fw-semibold">Voucher Amount (₹)</label>
+                            {{ form.amount(class="form-control" + (" is-invalid" if form.amount.errors else ""), type="number", step="0.01") }}
+                            {% for error in form.amount.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="date" class="form-label fw-semibold">Voucher Date</label>
+                            {{ form.date(class="form-control" + (" is-invalid" if form.date.errors else ""), type="date") }}
+                            {% for error in form.date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="description" class="form-label fw-semibold">Description / Remarks</label>
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="3") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('expenses.index') }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-secondary text-white px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

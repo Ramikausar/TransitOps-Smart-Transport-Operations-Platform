@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+{% endblock %}
+
+{% block page_title %}Dashboard Summary{% endblock %}
+
+{% block action_buttons %}
+<div class="d-flex gap-2">
+    {% if current_user.role in ['Fleet Manager'] %}
+    <a href="{{ url_for('trips.create') }}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-plus-lg"></i>Create Trip
+    </a>
+    {% endif %}
+    {% if current_user.role in ['Fleet Manager', 'Financial Analyst'] %}
+    <a href="{{ url_for('fuel.create') }}" class="btn btn-light btn-sm border border-secondary text-secondary d-flex align-items-center gap-1">
+        <i class="bi bi-fuel-pump"></i>Log Fuel
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- KPI Metric Cards Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3 mb-4">
+    
+    <!-- Card 2: Vehicles Status -->
+    <div class="col">
+        <div class="card h-100 kpi-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3.5">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold text-uppercase">Active / Total Trucks</span>
+                    <h3 class="fw-bold mt-1 mb-0 text-dark">{{ on_trip_vehicles }} <span class="fs-6 text-muted">/ {{ total_vehicles }}</span></h3>
+                </div>
+                <div class="kpi-icon bg-info text-white">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 3: Drivers Status -->
+    <div class="col">
+        <div class="card h-100 kpi-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3.5">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold text-uppercase">Drivers Available</span>
+                    <h3 class="fw-bold mt-1 mb-0 text-success">{{ available_drivers }} <span class="fs-6 text-muted">active</span></h3>
+                </div>
+                <div class="kpi-icon bg-success text-white">
+                    <i class="bi bi-person-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Maintenance Alerts -->
+    <div class="col">
+        <div class="card h-100 kpi-card border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3.5">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold text-uppercase">Maintenance Due</span>
+                    <h3 class="fw-bold mt-1 mb-0 {% if maintenance_due > 0 %}text-warning{% else %}text-dark{% endif %}">{{ maintenance_due }} <span class="fs-6 text-muted">in shop</span></h3>
+                </div>
+                <div class="kpi-icon bg-warning text-white">
+                    <i class="bi bi-wrench"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">
+    <!-- Card 5: Trips KPI -->
+    <div class="col">
+        <div class="card h-100 border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold">Active Trips (Dispatched)</span>
+                    <h4 class="fw-bold mb-0 text-dark">{{ active_trips }}</h4>
+                </div>
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fs-7">Dispatched</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 6: Fuel Costs Today -->
+    <div class="col">
+        <div class="card h-100 border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold">Today's Fuel Costs</span>
+                    <h4 class="fw-bold mb-0 text-danger">₹{{ "{:,.2f}".format(today_fuel_cost) }}</h4>
+                </div>
+                <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1 fs-7">Fuel Logs</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 7: General Expenses Today -->
+    <div class="col">
+        <div class="card h-100 border-0">
+            <div class="card-body d-flex align-items-center justify-content-between p-3">
+                <div>
+                    <span class="text-muted fs-7 fw-semibold">Today's Expenses</span>
+                    <h4 class="fw-bold mb-0 text-danger">₹{{ "{:,.2f}".format(today_expenses) }}</h4>
+                </div>
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-2 py-1 fs-7">Total Expenditures</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Panel for Roles -->
+<div class="card border-0 mb-4 shadow-sm">
+    <div class="card-body p-3.5">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i>Quick Actions</h6>
+        <div class="d-flex flex-wrap gap-2">
+            {% if current_user.role in ['Fleet Manager'] %}
+            <a href="{{ url_for('vehicles.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg me-1"></i>Register Vehicle</a>
+            <a href="{{ url_for('trips.create') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-geo-alt me-1"></i>Create Trip</a>
+            {% endif %}
+            
+            {% if current_user.role in ['Fleet Manager', 'Safety Officer'] %}
+            <a href="{{ url_for('drivers.create') }}" class="btn btn-sm btn-outline-success"><i class="bi bi-person-plus me-1"></i>Add Driver</a>
+            <a href="{{ url_for('maintenance.create') }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-wrench me-1"></i>Schedule Maintenance</a>
+            {% endif %}
+
+            {% if current_user.role in ['Fleet Manager', 'Financial Analyst'] %}
+            <a href="{{ url_for('fuel.create') }}" class="btn btn-sm btn-outline-danger"><i class="bi bi-fuel-pump me-1"></i>Log Fuel Fill</a>
+            <a href="{{ url_for('expenses.create') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-cash-stack me-1"></i>Log Expense</a>
+            <a href="{{ url_for('reports.index') }}" class="btn btn-sm btn-outline-info"><i class="bi bi-file-earmark-bar-graph me-1"></i>Generate PDF Reports</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Charts Grid Section -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Trips Per Day -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2 text-primary"></i>Trips Count (Last 7 Days)
+            </div>
+            <div class="card-body">
+                <div id="tripsChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Vehicle Status -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2 text-info"></i>Vehicle Fleet Distribution
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div id="statusChart" style="width: 100%; max-width: 350px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Fuel consumption -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header">
+                <i class="bi bi-fuel-pump-diesel me-2 text-danger"></i>Fuel Consumed (Liters per Month)
+            </div>
+            <div class="card-body">
+                <div id="fuelChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Expenses Breakdown -->
+    <div class="col-md-6">
+        <div class="card border-0 h-100">
+            <div class="card-header">
+                <i class="bi bi-cash-stack me-2 text-success"></i>Cumulative Expense Breakdown (₹)
+            </div>
+            <div class="card-body d-flex align-items-center justify-content-center">
+                <div id="expenseChart" style="width: 100%; max-width: 350px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activities Lists -->
+<div class="row g-4">
+    <!-- Recent Trips -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <span class="fw-bold"><i class="bi bi-geo-alt me-2 text-primary"></i>Recent Trips</span>
+                <a href="{{ url_for('trips.index') }}" class="fs-7 text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" style="border-radius: 0 0 var(--radius) var(--radius);">
+                    {% for trip in recent_trips %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                        <div>
+                            <a href="{{ url_for('trips.details', id=trip.id) }}" class="fw-semibold text-decoration-none" style="font-size: 0.85rem;">{{ trip.trip_code }}</a>
+                            <div class="text-muted fs-8">{{ trip.source }} &rarr; {{ trip.destination }}</div>
+                        </div>
+                        <span class="badge badge-status bg-{{ trip.status }}">{{ trip.status.upper() }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">No trips registered.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Maintenance -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <span class="fw-bold"><i class="bi bi-wrench me-2 text-warning"></i>Maintenance Activities</span>
+                <a href="{{ url_for('maintenance.index') }}" class="fs-7 text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" style="border-radius: 0 0 var(--radius) var(--radius);">
+                    {% for m in recent_maintenance %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                        <div>
+                            <span class="fw-semibold text-dark d-block" style="font-size: 0.85rem;">{{ m.vehicle.registration_number }} - {{ m.type }}</span>
+                            <div class="text-muted fs-8" style="max-width: 180px; text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">{{ m.description }}</div>
+                        </div>
+                        <span class="badge badge-status bg-{{ m.status }}">{{ m.status.upper() }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">No maintenance history.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- License Expiration Monitoring -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card border-0 h-100">
+            <div class="card-header bg-transparent d-flex align-items-center justify-content-between">
+                <span class="fw-bold"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>License Expiries (30 Days)</span>
+                <a href="{{ url_for('drivers.index') }}" class="fs-7 text-decoration-none">View Drivers</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush" style="border-radius: 0 0 var(--radius) var(--radius);">
+                    {% for d in expiring_licenses %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                        <div>
+                            <a href="{{ url_for('drivers.details', id=d.id) }}" class="fw-semibold text-decoration-none text-dark" style="font-size: 0.85rem;">{{ d.name }}</a>
+                            <div class="text-muted fs-8">License Expiry: {{ d.license_expiry.strftime('%d-%m-%Y') }}</div>
+                        </div>
+                        <span class="badge bg-danger rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Expired/Critical</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-success py-4">
+                        <i class="bi bi-check-circle me-1"></i>All driver licenses are fully valid.
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- ApexCharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Read chart data variables passed from backend
+    const chartData = {{ chart_data | tojson | safe }};
+
+    // 1. Trips Count Chart
+    new ApexCharts(document.querySelector("#tripsChart"), {
+        series: [{
+            name: 'Trips',
+            data: chartData.trips_per_day_data
+        }],
+        chart: {
+            type: 'bar',
+            height: 250,
+            toolbar: { show: false },
+            fontFamily: 'Inter, sans-serif'
+        },
+        colors: ['#1E3A8A'],
+        plotOptions: {
+            bar: {
+                borderRadius: 4,
+                horizontal: false,
+                columnWidth: '55%'
+            }
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+            categories: chartData.trips_per_day_labels,
+            axisTicks: { show: false }
+        },
+        yaxis: {
+            labels: {
+                formatter: function(val) { return Math.floor(val); }
+            }
+        },
+        grid: {
+            borderColor: '#F1F5F9'
+        }
+    }).render();
+
+    // 2. Vehicle Status Distribution
+    new ApexCharts(document.querySelector("#statusChart"), {
+        series: chartData.vehicle_status_data,
+        chart: {
+            type: 'donut',
+            height: 230,
+            fontFamily: 'Inter, sans-serif'
+        },
+        labels: chartData.vehicle_status_labels,
+        colors: ['#16A34A', '#2563EB', '#F59E0B', '#6B7280'],
+        legend: {
+            position: 'bottom',
+            fontSize: '11px'
+        },
+        dataLabels: { enabled: false },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%'
+                }
+            }
+        }
+    }).render();
+
+    // 3. Fuel Monthly Consumption
+    new ApexCharts(document.querySelector("#fuelChart"), {
+        series: [{
+            name: 'Fuel (Liters)',
+            data: chartData.fuel_consumption_data
+        }],
+        chart: {
+            type: 'area',
+            height: 250,
+            toolbar: { show: false },
+            fontFamily: 'Inter, sans-serif'
+        },
+        colors: ['#EF4444'],
+        fill: {
+            type: 'solid',
+            opacity: 0.1
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        dataLabels: { enabled: false },
+        xaxis: {
+            categories: chartData.fuel_consumption_labels
+        },
+        grid: {
+            borderColor: '#F1F5F9'
+        }
+    }).render();
+
+    // 4. Expense Categories
+    new ApexCharts(document.querySelector("#expenseChart"), {
+        series: chartData.expense_data,
+        chart: {
+            type: 'donut',
+            height: 230,
+            fontFamily: 'Inter, sans-serif'
+        },
+        labels: chartData.expense_labels,
+        colors: ['#DC2626', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#6B7280'],
+        legend: {
+            position: 'bottom',
+            fontSize: '11px'
+        },
+        dataLabels: { enabled: false },
+        plotOptions: {
+            pie: {
+                donut: {
+                    size: '65%'
+                }
+            }
+        }
+    }).render();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Add Driver - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('drivers.index') }}">Drivers</a></li>
+<li class="breadcrumb-item active" aria-current="page">Add Driver</li>
+{% endblock %}
+
+{% block page_title %}Add Driver Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent">
+                <i class="bi bi-person-badge me-2 text-success"></i>Driver Credentials & Specifications
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('drivers.create') }}" enctype="multipart/form-data" class="needs-validation">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label fw-semibold">Driver Full Name</label>
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. John Doe") }}
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="photo_file" class="form-label fw-semibold">Driver Photo</label>
+                            {{ form.photo_file(class="form-control" + (" is-invalid" if form.photo_file.errors else "")) }}
+                            {% for error in form.photo_file.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="text-muted fs-8">Accepted formats: JPG, PNG, JPEG. Size limit 2MB.</small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-semibold">Email Address (Unique)</label>
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="driver@transitops.com") }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                            {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="+1 555-0100") }}
+                            {% for error in form.phone.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-12">
+                            <label for="address" class="form-label fw-semibold">Residential Address</label>
+                            {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows="2", placeholder="Enter street address, city, state, zip...") }}
+                            {% for error in form.address.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">License & Safety Regulations</h6>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="license_number" class="form-label fw-semibold">License Number (Unique)</label>
+                            {{ form.license_number(class="form-control" + (" is-invalid" if form.license_number.errors else ""), placeholder="e.g. DL-NY88120") }}
+                            {% for error in form.license_number.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="license_category" class="form-label fw-semibold">License Category</label>
+                            {{ form.license_category(class="form-select" + (" is-invalid" if form.license_category.errors else "")) }}
+                            {% for error in form.license_category.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="license_expiry" class="form-label fw-semibold">License Expiry Date</label>
+                            {{ form.license_expiry(class="form-control" + (" is-invalid" if form.license_expiry.errors else ""), type="date") }}
+                            {% for error in form.license_expiry.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="safety_score" class="form-label fw-semibold">Initial Safety Score (0 - 100)</label>
+                            {{ form.safety_score(class="form-control" + (" is-invalid" if form.safety_score.errors else ""), type="number", step="0.1") }}
+                            {% for error in form.safety_score.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">ERP Linkage & Status</h6>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label fw-semibold">Duty Status</label>
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% for error in form.status.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="user_id" class="form-label fw-semibold">Link User Login Account</label>
+                            {{ form.user_id(class="form-select" + (" is-invalid" if form.user_id.errors else "")) }}
+                            {% for error in form.user_id.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                            <small class="text-muted fs-8">Select user account with 'Driver' role to enable driver portal access.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                        <a href="{{ url_for('drivers.index') }}" class="btn btn-light border px-4">Cancel</a>
+                        {{ form.submit(class="btn btn-success px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

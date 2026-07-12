@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Report Preview - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('reports.index') }}">Reports</a></li>
+<li class="breadcrumb-item active" aria-current="page">Preview</li>
+{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block action_buttons %}
+<div class="d-flex gap-2">
+    <a href="{{ url_for('reports.export_report', type=report_type, format='csv') }}" class="btn btn-secondary text-white btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-file-earmark-spreadsheet"></i>Export CSV
+    </a>
+    <a href="{{ url_for('reports.export_report', type=report_type, format='pdf') }}" class="btn btn-danger btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-file-earmark-pdf"></i>Export PDF
+    </a>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-light btn-sm border">
+        Back
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Table Preview Card -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-light border-0 py-3">
+        <span class="fw-semibold text-muted fs-7"><i class="bi bi-table me-1"></i>Ledger Preview (First 50 Rows)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                <thead>
+                    <tr class="table-light">
+                        {% for header in headers %}
+                        <th class="py-3 px-3">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr>
+                        {% for val in row %}
+                        <td class="py-2.5 px-3">
+                            {% if "Cost" in headers[loop.index0] or "Spend" in headers[loop.index0] or "Amount" in headers[loop.index0] or "₹" in headers[loop.index0] %}
+                                {% if val.startswith('₹') %}
+                                    <span class="fw-semibold text-danger">{{ val }}</span>
+                                {% else %}
+                                    <span class="fw-semibold text-danger">₹{{ val }}</span>
+                                {% endif %}
+                            {% elif headers[loop.index0] == "Status" %}
+                                <span class="badge badge-status {% if val in ['Available', 'Valid', 'Completed'] %}bg-available{% elif val in ['On Trip', 'In Progress', 'Dispatched'] %}bg-on_trip{% elif val in ['In Shop', 'Urgent'] %}bg-in_shop{% else %}bg-suspended{% endif %} fs-9">
+                                    {{ val }}
+                                </span>
+                            {% else %}
+                                {{ val }}
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="{{ headers|length }}" class="text-center py-5 text-muted">No records available to compile this report.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

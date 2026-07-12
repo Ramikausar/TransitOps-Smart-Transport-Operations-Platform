@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TransitOps ERP{% endblock %}</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Custom Theme Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% if current_user.is_authenticated %}
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="{{ url_for('dashboard.index') }}" class="sidebar-logo">
+                <i class="bi bi-truck text-info me-2"></i>Transit<span>Ops</span>
+            </a>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a href="{{ url_for('dashboard.index') }}" class="sidebar-link">
+                    <i class="bi bi-speedometer2"></i>Dashboard
+                </a>
+            </li>
+            
+            {% if current_user.role in ['Fleet Manager', 'Safety Officer', 'Financial Analyst'] %}
+            <li class="sidebar-heading mt-4">Fleet Operations</li>
+            {% endif %}
+
+            {% if current_user.role in ['Fleet Manager', 'Safety Officer', 'Financial Analyst'] %}
+            <li class="sidebar-item">
+                <a href="{{ url_for('vehicles.index') }}" class="sidebar-link">
+                    <i class="bi bi-truck-flatbed"></i>Vehicles
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.role in ['Fleet Manager', 'Safety Officer'] %}
+            <li class="sidebar-item">
+                <a href="{{ url_for('drivers.index') }}" class="sidebar-link">
+                    <i class="bi bi-person-badge"></i>Drivers
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="sidebar-item">
+                <a href="{{ url_for('trips.index') }}" class="sidebar-link">
+                    <i class="bi bi-geo-alt"></i>
+                    {% if current_user.role == 'Driver' %}
+                    My Trips
+                    {% else %}
+                    Trips
+                    {% endif %}
+                </a>
+            </li>
+
+            {% if current_user.role in ['Fleet Manager', 'Safety Officer'] %}
+            <li class="sidebar-item">
+                <a href="{{ url_for('maintenance.index') }}" class="sidebar-link">
+                    <i class="bi bi-wrench"></i>Maintenance
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.role in ['Fleet Manager', 'Financial Analyst'] %}
+            <li class="sidebar-heading mt-4">Financials</li>
+            
+            <li class="sidebar-item">
+                <a href="{{ url_for('fuel.index') }}" class="sidebar-link">
+                    <i class="bi bi-fuel-pump"></i>Fuel Logs
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{{ url_for('expenses.index') }}" class="sidebar-link">
+                    <i class="bi bi-cash-stack"></i>Expenses
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a href="{{ url_for('reports.index') }}" class="sidebar-link">
+                    <i class="bi bi-file-earmark-bar-graph"></i>Reports
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="sidebar-heading mt-4">System</li>
+            
+            <li class="sidebar-item">
+                <a href="{{ url_for('settings.index') }}" class="sidebar-link">
+                    <i class="bi bi-gear"></i>Settings
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link text-danger">
+                    <i class="bi bi-box-arrow-left"></i>Logout
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Top Navbar -->
+    <nav class="top-navbar">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-link text-dark p-0 me-3 d-lg-none" id="sidebarToggle">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+            <h5 class="m-0 font-weight-bold d-none d-md-block">Transport Operations Management System</h5>
+        </div>
+        
+        <div class="d-flex align-items-center gap-3">
+            <!-- Notifications Dropdown -->
+            <div class="dropdown" id="notificationDropdownContainer">
+                <button class="btn btn-light position-relative p-2 rounded-circle border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="notificationBtn">
+                    <i class="bi bi-bell fs-5 text-dark"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="notificationBadge" style="margin-top: 4px; margin-left: -4px;">
+                        0
+                    </span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow border-0 p-0" style="width: 320px; border-radius: 12px; overflow: hidden;" aria-labelledby="notificationBtn">
+                    <div class="p-3 bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-semibold">Notifications</h6>
+                        <form action="{{ url_for('notifications.read_all') }}" method="POST" class="m-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-link text-white p-0 text-decoration-none" style="font-size: 0.75rem;">Mark all read</button>
+                        </form>
+                    </div>
+                    <div class="list-group list-group-flush" id="notificationList" style="max-height: 250px; overflow-y: auto;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div class="p-2 border-top text-center bg-light">
+                        <a href="{{ url_for('notifications.index') }}" class="text-primary text-decoration-none" style="font-size: 0.8rem; font-weight: 500;">View All Notifications</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle d-flex align-items-center gap-2 border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle fs-5 text-primary"></i>
+                    <div class="text-start d-none d-sm-block">
+                        <div class="fw-semibold lh-1" style="font-size: 0.85rem;">{{ current_user.name }}</div>
+                        <small class="text-muted" style="font-size: 0.7rem;">{{ current_user.role }}</small>
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><a class="dropdown-menu-item dropdown-item" href="{{ url_for('settings.index') }}"><i class="bi bi-gear me-2"></i>Profile Settings</a></li>
+                    {% if current_user.role == 'Fleet Manager' %}
+                    <li><a class="dropdown-menu-item dropdown-item" href="{{ url_for('settings.users_list') }}"><i class="bi bi-people me-2"></i>User Accounts</a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-menu-item dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-2"></i>Sign Out</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Wrapper -->
+    <main class="main-wrapper">
+        <!-- Breadcrumb & Header Row -->
+        <div class="row align-items-center mb-4">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1">
+                        <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Home</a></li>
+                        {% block breadcrumb %}{% endblock %}
+                    </ol>
+                </nav>
+                <h3 class="m-0 font-weight-bold">{% block page_title %}{% endblock %}</h3>
+            </div>
+            <div class="col-auto">
+                {% block action_buttons %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        <i class="bi {% if category == 'success' %}bi-check-circle-fill{% elif category == 'danger' %}bi-exclamation-triangle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Page Content -->
+        {% block content %}{% endblock %}
+        
+        <!-- Footer -->
+        <footer class="mt-5">
+            <div class="container-fluid text-center">
+                <p class="m-0">© {{ now().year }} TransitOps. All rights reserved. Registered as <strong>{{ current_user.role }}</strong>.</p>
+            </div>
+        </footer>
+    </main>
+
+    {% else %}
+        <!-- For Unauthenticated users (Login view) -->
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <!-- Custom JS Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

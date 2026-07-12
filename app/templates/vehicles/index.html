@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Vehicles List - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">Vehicles</li>
+{% endblock %}
+
+{% block page_title %}Vehicles Management{% endblock %}
+
+{% block action_buttons %}
+{% if current_user.role in ['Fleet Manager'] %}
+<a href="{{ url_for('vehicles.create') }}" class="btn btn-primary d-flex align-items-center gap-1">
+    <i class="bi bi-plus-lg"></i>Add Vehicle
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="card border-0 mb-4 shadow-sm">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('vehicles.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Search reg number, name, type..." value="{{ search }}">
+                </div>
+            </div>
+            
+            <div class="col-md-2.5 col-sm-6 col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">-- All Statuses --</option>
+                    <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+                    <option value="on_trip" {% if status_filter == 'on_trip' %}selected{% endif %}>On Trip</option>
+                    <option value="in_shop" {% if status_filter == 'in_shop' %}selected{% endif %}>In Shop</option>
+                    <option value="retired" {% if status_filter == 'retired' %}selected{% endif %}>Retired</option>
+                </select>
+            </div>
+
+            <div class="col-md-2.5 col-sm-6 col-md-3">
+                <select name="type" class="form-select">
+                    <option value="">-- All Types --</option>
+                    <option value="Truck" {% if type_filter == 'Truck' %}selected{% endif %}>Truck</option>
+                    <option value="Van" {% if type_filter == 'Van' %}selected{% endif %}>Van</option>
+                    <option value="Flatbed" {% if type_filter == 'Flatbed' %}selected{% endif %}>Flatbed</option>
+                    <option value="Refrigerated" {% if type_filter == 'Refrigerated' %}selected{% endif %}>Refrigerated Truck</option>
+                    <option value="Bus" {% if type_filter == 'Bus' %}selected{% endif %}>Bus</option>
+                    <option value="Car" {% if type_filter == 'Car' %}selected{% endif %}>Car</option>
+                </select>
+            </div>
+
+            <input type="hidden" name="sort_by" value="{{ sort_by }}">
+            <input type="hidden" name="sort_order" value="{{ sort_order }}">
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+                <a href="{{ url_for('vehicles.index') }}" class="btn btn-light border w-100">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Vehicles Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        {% macro sortable_th(field, label) %}
+                        <th>
+                            <a href="{{ url_for('vehicles.index', search=search, status=status_filter, type=type_filter, sort_by=field, sort_order='desc' if sort_by == field and sort_order == 'asc' else 'asc') }}" class="text-dark text-decoration-none d-flex align-items-center gap-1">
+                                {{ label }}
+                                {% if sort_by == field %}
+                                    <i class="bi bi-arrow-{% if sort_order == 'asc' %}up{% else %}down{% endif %} fs-8 text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up fs-8 text-muted"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        {% endmacro %}
+                        
+                        {{ sortable_th('registration_number', 'Reg Number') }}
+                        {{ sortable_th('name', 'Name') }}
+                        {{ sortable_th('type', 'Type') }}
+                        {{ sortable_th('max_load_capacity', 'Capacity') }}
+                        {{ sortable_th('current_odometer', 'Odometer') }}
+                        {{ sortable_th('status', 'Status') }}
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vehicle in vehicles %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('vehicles.details', id=vehicle.id) }}" class="fw-semibold text-decoration-none">{{ vehicle.registration_number }}</a>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ vehicle.name }}</div>
+                            <small class="text-muted">{{ vehicle.model }}</small>
+                        </td>
+                        <td>{{ vehicle.type }}</td>
+                        <td>{{ "{:,.0f}".format(vehicle.max_load_capacity) }} kg</td>
+                        <td>{{ "{:,.1f}".format(vehicle.current_odometer) }} km</td>
+                        <td>
+                            <span class="badge badge-status bg-{{ vehicle.status }}">{{ vehicle.status.upper() }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-1.5">
+                                <a href="{{ url_for('vehicles.details', id=vehicle.id) }}" class="btn btn-light btn-sm border" title="View details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if current_user.role in ['Fleet Manager'] %}
+                                <a href="{{ url_for('vehicles.edit', id=vehicle.id) }}" class="btn btn-light btn-sm border text-primary" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ url_for('vehicles.delete', id=vehicle.id) }}" method="POST" class="d-inline confirm-delete" data-confirm-message="Are you sure you want to delete vehicle {{ vehicle.registration_number }}? This will delete all linked history records.">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-light btn-sm border text-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-5">
+                            <i class="bi bi-truck-flatbed text-secondary fs-2 d-block mb-3"></i>
+                            <h5>No Vehicles Found</h5>
+                            <p class="fs-7">Modify search queries or add a new vehicle profile.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Pagination Footer -->
+{% if pagination and pagination.pages > 1 %}
+<div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="text-muted fs-7">
+        Showing Page {{ pagination.page }} of {{ pagination.pages }}
+    </div>
+    <nav>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('vehicles.index', page=pagination.prev_num, search=search, status=status_filter, type=type_filter, sort_by=sort_by, sort_order=sort_order) }}">Previous</a>
+            </li>
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('vehicles.index', page=page_num, search=search, status=status_filter, type=type_filter, sort_by=sort_by, sort_order=sort_order) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('vehicles.index', page=pagination.next_num, search=search, status=status_filter, type=type_filter, sort_by=sort_by, sort_order=sort_order) }}">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+{% endif %}
+{% endblock %}

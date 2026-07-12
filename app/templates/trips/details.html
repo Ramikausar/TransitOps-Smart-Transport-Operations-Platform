@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Trip Details - {{ trip.trip_code }} - TransitOps ERP{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('trips.index') }}">Trips</a></li>
+<li class="breadcrumb-item active" aria-current="page">{{ trip.trip_code }}</li>
+{% endblock %}
+
+{% block page_title %}Trip Details: {{ trip.trip_code }}{% endblock %}
+
+{% block action_buttons %}
+<div class="d-flex gap-2">
+    <!-- Edit specifications only for Draft state -->
+    {% if trip.status == 'draft' and current_user.role in ['Fleet Manager', 'Administrator'] %}
+    <a href="{{ url_for('trips.edit', id=trip.id) }}" class="btn btn-light btn-sm border text-primary">
+        <i class="bi bi-pencil me-1"></i>Edit Specifications
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Visual State Pipeline -->
+<div class="card border-0 mb-4 shadow-sm">
+    <div class="card-body p-3.5">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted fw-semibold fs-7 text-uppercase">Current Workflow State:</span>
+                <span class="badge badge-status bg-{{ trip.status }} fs-6 py-1.5 px-3">{{ trip.status.upper() }}</span>
+            </div>
+            
+            <div class="d-flex gap-2">
+                {% if trip.status == 'draft' %}
+                    <!-- Dispatch Action -->
+                    {% if current_user.role in ['Fleet Manager', 'Safety Officer', 'Administrator'] or (current_user.role == 'Driver' and trip.driver.user_id == current_user.id) %}
+                    <form action="{{ url_for('trips.dispatch', id=trip.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm px-4 py-2">
+                            <i class="bi bi-send me-1"></i>Dispatch Trip
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <!-- Cancel Action -->
+                    {% if current_user.role in ['Fleet Manager', 'Safety Officer', 'Administrator'] or (current_user.role == 'Driver' and trip.driver.user_id == current_user.id) %}
+                    <form action="{{ url_for('trips.cancel', id=trip.id) }}" method="POST" class="d-inline confirm-delete" data-confirm-message="Are you sure you want to cancel this trip request?">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-light btn-sm border text-danger px-4 py-2">
+                            <i class="bi bi-x-circle me-1"></i>Cancel Request
+                        </button>
+                    </form>
+                    {% endif %}
+
+                {% elif trip.status == 'dispatched' %}
+                    <!-- Complete Action -->
+                    {% if current_user.role in ['Fleet Manager', 'Financial Analyst', 'Administrator'] or (current_user.role == 'Driver' and trip.driver.user_id == current_user.id) %}
+                    <a href="{{ url_for('trips.complete', id=trip.id) }}" class="btn btn-success btn-sm px-4 py-2">
+                        <i class="bi bi-check-lg me-1"></i>Complete Trip
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Cancel Action -->
+                    {% if current_user.role in ['Fleet Manager', 'Safety Officer', 'Administrator'] or (current_user.role == 'Driver' and trip.driver.user_id == current_user.id) %}
+                    <form action="{{ url_for('trips.cancel', id=trip.id) }}" method="POST" class="d-inline confirm-delete" data-confirm-message="Are you sure you want to cancel this dispatched trip? The vehicle and driver will be returned to Available.">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-light btn-sm border text-danger px-4 py-2">
+                            <i class="bi bi-x-circle me-1"></i>Cancel Trip
+                        </button>
+                    </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left panel: Logistics Specs -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-geo-alt me-2 text-primary"></i>Logistics specifications
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <div class="detail-meta-label">Source Location</div>
+                        <div class="detail-meta-value fs-6 text-dark"><i class="bi bi-building me-1 text-muted"></i>{{ trip.source }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="detail-meta-label">Destination Location</div>
+                        <div class="detail-meta-value fs-6 text-dark"><i class="bi bi-flag me-1 text-muted"></i>{{ trip.destination }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="detail-meta-label">Cargo weight</div>
+                        <div class="detail-meta-value fs-6">{{ "{:,.1f}".format(trip.cargo_weight) }} kg</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="detail-meta-label">Estimated Distance</div>
+                        <div class="detail-meta-value fs-6">{{ trip.distance }} km</div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-meta-label">Trip Notes</div>
+                        <div class="detail-meta-value p-3 bg-light border rounded fs-7 text-muted leading-relaxed">
+                            {{ trip.trip_notes or "No notes logged for this trip request." }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if trip.status == 'completed' %}
+        <!-- Closing metrics -->
+        <div class="card border-0 shadow-sm border-start border-success border-4">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-check-circle-fill me-2 text-success"></i>Closing Trip Statistics
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="detail-meta-label">Final Odometer</div>
+                        <div class="detail-meta-value text-dark">{{ "{:,.1f}".format(trip.final_odometer) }} km</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="detail-meta-label">Fuel Consumed</div>
+                        <div class="detail-meta-value text-dark">{{ trip.fuel_consumed }} L</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="detail-meta-label">Trip Duration</div>
+                        <div class="detail-meta-value fs-8 text-muted">
+                            Completed on:<br>{{ trip.completion_date.strftime('%Y-%m-%d %H:%M') }} UTC
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Right panel: Linked Assets -->
+    <div class="col-lg-5">
+        <!-- Assigned Vehicle -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-truck me-2 text-primary"></i>Assigned Vehicle</span>
+                {% if current_user.role != 'Driver' %}
+                <a href="{{ url_for('vehicles.details', id=trip.vehicle_id) }}" class="fs-8 text-decoration-none">View Fleet File</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h5 class="fw-bold text-primary mb-1">{{ trip.vehicle.registration_number }}</h5>
+                <p class="text-muted fs-7 mb-3">{{ trip.vehicle.name }} ({{ trip.vehicle.model }})</p>
+                <div class="row g-2 fs-7 text-muted border-top pt-2">
+                    <div class="col-6">Max Capacity: <strong>{{ "{:,.0f}".format(trip.vehicle.max_load_capacity) }} kg</strong></div>
+                    <div class="col-6">Status: <span class="badge badge-status bg-{{ trip.vehicle.status }} fs-9">{{ trip.vehicle.status.upper() }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Driver -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-person-badge me-2 text-success"></i>Assigned Driver</span>
+                {% if current_user.role != 'Driver' %}
+                <a href="{{ url_for('drivers.details', id=trip.driver_id) }}" class="fs-8 text-decoration-none">View Driver File</a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <h5 class="fw-bold text-dark mb-1">{{ trip.driver.name }}</h5>
+                <p class="text-muted fs-7 mb-3"><i class="bi bi-phone me-1"></i>{{ trip.driver.phone }}</p>
+                <div class="row g-2 fs-7 text-muted border-top pt-2">
+                    <div class="col-6">Safety Score: <strong class="text-success">{{ trip.driver.safety_score }}</strong></div>
+                    <div class="col-6">License Exp: <strong>{{ trip.driver.license_expiry.strftime('%Y-%m-%d') }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Log -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light border-0">
+                <i class="bi bi-clock-history me-2 text-secondary"></i>Workflow Timeline
+            </div>
+            <div class="card-body p-3">
+                <div class="d-flex flex-column gap-3.5 fs-7">
+                    <div class="d-flex gap-2">
+                        <i class="bi bi-circle-fill text-muted mt-1 fs-9"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Trip Created</div>
+                            <small class="text-muted">{{ trip.created_date.strftime('%Y-%m-%d %H:%M') }} UTC</small>
+                        </div>
+                    </div>
+                    {% if trip.dispatch_date %}
+                    <div class="d-flex gap-2">
+                        <i class="bi bi-circle-fill text-primary mt-1 fs-9"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Trip Dispatched</div>
+                            <small class="text-muted">{{ trip.dispatch_date.strftime('%Y-%m-%d %H:%M') }} UTC</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if trip.status == 'completed' and trip.completion_date %}
+                    <div class="d-flex gap-2">
+                        <i class="bi bi-circle-fill text-success mt-1 fs-9"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Trip Completed</div>
+                            <small class="text-muted">{{ trip.completion_date.strftime('%Y-%m-%d %H:%M') }} UTC</small>
+                        </div>
+                    </div>
+                    {% elif trip.status == 'cancelled' %}
+                    <div class="d-flex gap-2">
+                        <i class="bi bi-circle-fill text-danger mt-1 fs-9"></i>
+                        <div>
+                            <div class="fw-semibold text-dark">Trip Cancelled</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
