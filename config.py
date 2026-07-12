@@ -1,7 +1,7 @@
 import os
 
 class Config:
-     # Secret key for CSRF and session signing
+      # Secret key for CSRF and session signing
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-transitops-secure-12345')
     
     # Database configuration
